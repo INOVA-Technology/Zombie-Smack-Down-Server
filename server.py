@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-import socket, select
+import socket, select, sys, os
+directory = os.path.realpath('.')
+absolute_directory = os.path.join(directory, 'lib')
+sys.path.append(absolute_directory)
+import game, zombie, player
 
 class Server:
     
@@ -39,7 +43,7 @@ class Server:
                     try:
                         data = sock.recv(self.recv_buffer)
                         if data:
-                            self.broadcast_data(sock, data)
+                            sock.send(b'what?\n')
 
                     except:
                         msg = 'Client (%s, %s) is offline' % addr
