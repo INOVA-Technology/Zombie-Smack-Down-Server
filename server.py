@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import socket, select, sys, os
+
 directory = os.path.realpath('.')
 absolute_directory = os.path.join(directory, 'lib')
 sys.path.append(absolute_directory)
-import game, zombie, player
+from game import Game
+# import game, zombie, player
 
 class Server:
     
@@ -18,6 +20,7 @@ class Server:
         self.server_socket.bind(('', self.port))
         self.server_socket.listen(self.max_connections)
         self.connection_list.append(self.server_socket)
+        self.games = {}
         print('Server started on port ' + str(self.port))
 
     def broadcast_data(self, sock, message):
@@ -26,8 +29,12 @@ class Server:
                 try:
                     socket.send(message)
                 except:
-                    socket.close()
-                    self.connection_list.remove(socket)
+                    disconnect(socket)
+
+    def disconnect(self, socket):
+        del self.games[socket.fileno()]
+        socket.close()
+        self.connection_list.remove(socket)
 
     def start(self):
         while True:
@@ -39,17 +46,25 @@ class Server:
                     self.connection_list.append(sockfd)
                     print('Client (%s, %s) connected' % addr)
 
+                    game = Game(sockfd, self)
+                    self.games[sockfd.fileno()] = game
+                    game.start()
+
                 else:
                     try:
                         data = sock.recv(self.recv_buffer)
                         if data:
-                            sock.send(b'what?\n')
+                            self.games[sock.fileno()].parse_input(data.decode())
+                    
+                    except UnicodeDecodeError:
+                        self.games[sock.fileno()].quit()
+                    
 
-                    except:
-                        msg = 'Client (%s, %s) is offline' % addr
-                        self.broadcast_data(sock, msg) 
-                        print(msg)
-                        self.connection_list.remove(sock)
+                    # except:
+                    #    msg = 'Client (%s, %s) is offline' % addr
+                    #    self.broadcast_data(sock, msg) 
+                    #    print(msg)
+                    #    self.connection_list.remove(sock)
 
 server = Server()
 
