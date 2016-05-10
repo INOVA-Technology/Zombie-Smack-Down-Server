@@ -24,7 +24,7 @@ class Player:
 
     def take_damage(self, damage):
         self.health -= damage
-        self.game.display(color.RED + "The zombie beat the heck you! -%d" % damage + color.END)
+        self.game.display(color.RED + "The zombie beat the heck out of you! -%d" % damage + color.END)
         self.check_dead()
 
     def check_dead(self):
