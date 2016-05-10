@@ -4,6 +4,7 @@ from collections import OrderedDict
 directory = os.path.realpath('.')
 absolute_directory = os.path.join(directory, 'lib')
 sys.path.append(absolute_directory)
+import color
 from zombie import Zombie
 from zombie_list import ZOMBIE_TYPES
 from player import Player
@@ -21,6 +22,8 @@ class Game:
         self.server.disconnect(self.socket)
 
     def start(self):
+        self.display(color.MAGENTA + 'Type help or ? for help' + color.END)
+        self.display('> ', newLine = False)
         self.generate_zombie()
 
     def generate_zombie(self):
@@ -57,6 +60,8 @@ class Game:
             self.display('What?')
         else:
             cmds[cmd_found](match)
+
+        self.display('> ', newLine = False)
 
     def kick(self):
         self.player.kick(self.zombie)
