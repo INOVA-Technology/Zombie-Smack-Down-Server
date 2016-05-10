@@ -1,8 +1,7 @@
-- Make the zombie give you xp when they are slain
 - Add combos
+- Add upgrades
 - Add cool randomized messages for attacks, kills, and such
 - Add/finish info and help commands
-- Add a way to quit
 - Add acounts
 	- Save the game
 

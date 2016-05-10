@@ -17,6 +17,7 @@ class Game:
         self.zombie = None
         self.socket = socket
         self.server = server
+        self.wave = 1
 
     def quit(self):
         self.server.disconnect(self.socket)
@@ -28,11 +29,16 @@ class Game:
 
     def generate_zombie(self):
         self.round += 1
-        self.zombie = Zombie(self, *ZOMBIE_TYPES[(self.round - 1) // 3])
+        if self.round % 3 == 0:
+            self.wave += 1
+        self.zombie = Zombie(self, *ZOMBIE_TYPES[self.wave - 1])
 
     def display(self, string, newLine = True):
         if newLine: string += '\n'
-        self.socket.send(string.encode())
+        try:
+            self.socket.send(string.encode())
+        except OSError:
+            pass
 
     def check_regex(self, feedback, regex_str):
         match = re.compile(regex_str).match(feedback)
