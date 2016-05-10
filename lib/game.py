@@ -11,8 +11,8 @@ from player import Player
 class Game:
 
     def __init__(self, socket, server):
-        self.player = Player()
-        self.round = 1
+        self.player = Player(self)
+        self.round = 0
         self.zombie = None
         self.socket = socket
         self.server = server
@@ -24,9 +24,9 @@ class Game:
         self.generate_zombie()
 
     def generate_zombie(self):
-        self.zombie = Zombie(*ZOMBIE_TYPES[(self.round - 1) // 3])
-        self.zombie.name = names.get_first_name()
-        self.socket.send((self.zombie.name + '\n').encode())
+        self.round += 1
+        self.zombie = Zombie(self, *ZOMBIE_TYPES[(self.round - 1) // 3])
+        self.zombie.name = names.get_full_name()
 
     def display(self, string, newLine = True):
         if newLine: string += '\n'
@@ -42,8 +42,8 @@ class Game:
     def parse_input(self, feedback):
         feedback = feedback.strip().lower()
         cmds = OrderedDict()
-        cmds['^kick$'] = (lambda x:
-            self.display('Woa there, hold your horses.'))
+        cmds['^kick$'] = lambda x: self.kick()
+        cmds['^punch$'] = lambda x: self.punch()
 
         match = None
         cmd_found = None
@@ -58,5 +58,19 @@ class Game:
         else:
             cmds[cmd_found](match)
 
+    def kick(self):
+        self.player.kick(self.zombie)
+        self.finish_attack()
+
+    def punch(self):
+        self.player.punch(self.zombie)
+        self.finish_attack()
+
+    def finish_attack(self):
+        if self.zombie.alive:
+            self.zombie.attack(self.player)
+        else:
+            self.generate_zombie()
+        
 
 

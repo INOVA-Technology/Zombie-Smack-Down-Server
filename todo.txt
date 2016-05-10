@@ -1,0 +1,8 @@
+- Add colored output to make it neater and clearer
+- Add combos
+- Add info and help commands
+- Add a way to quit
+- Add acounts
+	- Save the game
+
+
