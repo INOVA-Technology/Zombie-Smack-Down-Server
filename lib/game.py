@@ -1,4 +1,4 @@
-import os, sys, socket, names, re
+import os, sys, socket, re
 from collections import OrderedDict
 
 directory = os.path.realpath('.')
@@ -29,7 +29,6 @@ class Game:
     def generate_zombie(self):
         self.round += 1
         self.zombie = Zombie(self, *ZOMBIE_TYPES[(self.round - 1) // 3])
-        self.zombie.name = names.get_full_name()
 
     def display(self, string, newLine = True):
         if newLine: string += '\n'
