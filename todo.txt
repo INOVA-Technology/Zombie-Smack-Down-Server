@@ -1,5 +1,6 @@
 - Add combos
 - Add upgrades
+- Add a kick count/score
 - Add cool randomized messages for attacks, kills, and such
 - Add/finish info and help commands
 - Add acounts

@@ -14,6 +14,7 @@ class Player:
         self.health = 25
         self.xp = 5
         self.rank = 1
+        self.has_healed = False
 
     def kick(self, zombie):
         damage = random.randint(4, 6)
@@ -44,6 +45,23 @@ class Player:
     def give_xp(self, amount):
         self.xp += amount
         self.game.display(color.CYAN + "+%d xp!" % amount + color.END)
+
+    def heal(self, amount):
+        amount = int(amount)
+        if amount and amount > 0:
+            if self.xp >= amount:
+                self.health += amount
+                self.xp -= amount
+                self.game.display(color.CYAN + '+%d health!' % amount + color.END)
+                self.game.display(color.RED + '-%d xp' % amount + color.END)
+            else:
+                self.game.display(color.YELLOW + 'You don\'t have enough xp!' + color.END)
+        else:
+            self.game.display(color.MAGENTA, newLine = False)
+            self.game.display('Usage: heal amount')
+            self.game.display('amount must be an integer greater then 0.')
+            self.game.display('For each hp you heal, you will lose one xp.')
+            self.game.display(color.END, newLine = False)
 
 
 

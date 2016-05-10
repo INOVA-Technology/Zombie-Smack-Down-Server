@@ -54,6 +54,7 @@ class Game:
         cmds['^punch$'] = lambda x: self.punch()
         cmds['^info$'] = lambda x: self.info()
         cmds['^quit|exit$'] = lambda x: self.quit()
+        cmds['^heal( (\d+))?$'] = lambda x: self.player.heal(x[1])
         cmds['^\s*$'] = lambda x: None
 
         match = None
