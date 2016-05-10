@@ -47,6 +47,9 @@ class Game:
         cmds = OrderedDict()
         cmds['^kick$'] = lambda x: self.kick()
         cmds['^punch$'] = lambda x: self.punch()
+        cmds['^info$'] = lambda x: self.info()
+        cmds['^quit|exit$'] = lambda x: self.quit()
+        cmds['^\s*$'] = lambda x: None
 
         match = None
         cmd_found = None
@@ -61,7 +64,8 @@ class Game:
         else:
             cmds[cmd_found](match)
 
-        self.display('> ', newLine = False)
+        if not (feedback == "quit" or feedback == "exit"):
+            self.display('> ', newLine = False)
 
     def kick(self):
         self.player.kick(self.zombie)
@@ -76,6 +80,12 @@ class Game:
             self.zombie.attack(self.player)
         else:
             self.generate_zombie()
+
+    def info(self):
+        self.player.info()
+        self.display('')
+        self.zombie.info()
+
         
 
 

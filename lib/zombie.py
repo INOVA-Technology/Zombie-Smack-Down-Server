@@ -9,12 +9,13 @@ random.seed()
 
 class Zombie:
     
-    def __init__(self, game, name, kind, health, power):
+    def __init__(self, game, name, kind, health, power, xp):
         self.game = game
         self.name = name
         self.kind = kind
         self.health = random.randint(*health)
         self.power = power
+        self.xp = random.randint(*xp)
         self.alive = True
 
     def take_damage(self, damage):
@@ -24,11 +25,17 @@ class Zombie:
 
     def check_dead(self):
         if self.health <= 0:
-            self.game.display(color.RED + "You killed %s, the %s!" % (self.name, self.kind) + color.END)
+            self.game.display(color.RED + "KO! You killed the %s!" % self.kind.lower() + color.END)
             self.alive = False
 
     def attack(self, player):
         damage = random.randint(*self.power)
         player.take_damage(damage)
+
+    def info(self):
+        self.game.display(color.MAGENTA, newLine = False)
+        self.game.display("%s health: %d" % (self.kind, self.health))
+        self.game.display("Attack Strength: %d to %d" % (self.power[0], self.power[1]))
+        self.game.display(color.END, newLine = False)
 
 

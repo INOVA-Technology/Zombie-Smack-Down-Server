@@ -12,7 +12,7 @@ class Player:
     def __init__(self, game):
         self.game = game
         self.health = 25
-        self.money = 5
+        self.xp = 5
 
     def kick(self, zombie):
         damage = random.randint(4, 6)
@@ -31,6 +31,12 @@ class Player:
         if self.health <= 0:
             self.game.display(color.RED + "You died!" + color.END)
             self.game.quit()
+
+    def info(self):
+        self.game.display(color.MAGENTA, newLine = False)
+        self.game.display("Health: %d" % self.health)
+        self.game.display("XP: %d" % self.xp)
+        self.game.display(color.END, newLine = False)
 
 
 
