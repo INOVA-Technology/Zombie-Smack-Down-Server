@@ -19,10 +19,29 @@ class Game:
         self.account_name = ''
         self.account_password_hash = ''
         self.account_info = ()
+        self.has_started = False
 
     def quit(self):
+        if not self.has_started:
+            self.server.disconnect(self.socket)
+        else:
+            self.display("Save yo game? Yes or no?")
+            return self.maybe_quit
+
+    def maybe_quit(self, text):
+        res = text.strip().lower()
+        if res == 'yes':
+            self.save()
+        elif res != 'no':
+            return self.quit
+
         self.server.disconnect(self.socket)
 
+    def save(self):
+        c = self.server.db.cursor()
+        c.execute('UPDATE users SET has_healed=?, number_of_games_played=?, punch_upgrade=?, kick_upgrade=?, total_kills=?, rank=?, new_game=?, current_kills=?, wave=?, xp=?, health=? WHERE username = ?', self.player.info_to_save())
+        self.server.db.commit()
+    
     def signin(self, text = None):
         self.display(color.MAGENTA + 'Welcome to Zombie Smack Down!' + color.END)
         self.display("Enter 'signin' if you've been here before and have an account, or enter 'signup' to create an account.")
@@ -89,7 +108,7 @@ class Game:
         if bcrypt.checkpw(text, self.account_info[1]):
             self.display('Welcome %s!' % self.account_info[0])
             a = self.account_info
-            self.player = Player(self, a[0], a[2], [3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12])
+            self.player = Player(self, a[0], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12])
             self.start()
         else:
             self.display(color.YELLOW + 'Wrong passoword.' + color.END)
@@ -99,6 +118,8 @@ class Game:
         self.display(color.MAGENTA + 'Type help or ? for help' + color.END)
         self.display('> ', newLine = False)
         self.generate_zombie()
+        self.has_started = True
+        self.player.new_game = False
 
     def generate_zombie(self):
         self.zombie = Zombie(self, *ZOMBIE_TYPES[self.player.wave - 1])
@@ -147,15 +168,15 @@ class Game:
 
     def kick(self):
         self.player.kick(self.zombie)
-        self.finish_attack()
+        return self.finish_attack()
 
     def punch(self):
         self.player.punch(self.zombie)
-        self.finish_attack()
+        return self.finish_attack()
 
     def finish_attack(self):
         if self.zombie.alive:
-            self.zombie.attack(self.player)
+            return self.zombie.attack(self.player)
         else:
             self.generate_zombie()
 

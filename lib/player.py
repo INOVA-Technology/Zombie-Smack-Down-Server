@@ -12,13 +12,13 @@ class Player:
     def __init__(self, game, username, has_healed, number_of_games_played, punch_upgrade, kick_upgrade, total_kills, rank, new_game, current_kills, wave, xp, health):
         self.game = game
         self.username = username
-        self.has_healed = has_healed
+        self.has_healed = bool(has_healed)
         self.number_of_games_played = number_of_games_played
         self.punch_upgrade = punch_upgrade
         self.kick_upgrade = kick_upgrade
         self.total_kills = total_kills
         self.rank = rank
-        self.new_game = new_game
+        self.new_game = bool(new_game)
         if not new_game:
             self.current_kills = current_kills
             self.wave = wave
@@ -41,12 +41,14 @@ class Player:
     def take_damage(self, damage):
         self.health -= damage
         self.game.display(color.RED + "The zombie beat the heck out of you! -%d" % damage + color.END)
-        self.check_dead()
+        return self.check_dead()
 
     def check_dead(self):
         if self.health <= 0:
             self.game.display(color.RED + "You died!" + color.END)
-            self.game.quit()
+            self.new_game = True
+            self.number_of_games_played += 1
+            return self.game.quit()
 
     def info(self):
         self.game.display(color.MAGENTA, newLine = False)
@@ -83,6 +85,10 @@ class Player:
             self.game.display('amount must be an integer greater then 0.')
             self.game.display('For each hp you heal, you will lose one xp.')
             self.game.display(color.END, newLine = False)
+
+    def info_to_save(self):
+        return (int(self.has_healed), self.number_of_games_played, self.punch_upgrade, self.kick_upgrade, self.total_kills, self.rank, int(self.new_game), self.current_kills, self.wave, self.xp, self.health, self.username)
+
 
 
 

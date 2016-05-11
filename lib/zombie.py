@@ -32,7 +32,7 @@ class Zombie:
 
     def attack(self, player):
         damage = random.randint(*self.power)
-        player.take_damage(damage)
+        return player.take_damage(damage)
 
     def info(self):
         self.game.display(color.MAGENTA, newLine = False)
