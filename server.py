@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import socket, select, sys, os
+import socket, select, sys, os, sqlite3
 
 directory = os.path.realpath('.')
 absolute_directory = os.path.join(directory, 'lib')
@@ -21,7 +21,17 @@ class Server:
         self.server_socket.listen(self.max_connections)
         self.connection_list.append(self.server_socket)
         self.games = {}
+        self.statuses = {}
         print('Server started on port ' + str(self.port))
+
+    def init_db(self):
+        db_path = "zsd_data.db"
+        db_exists = os.path.isfile(db_path)
+        self.db = sqlite3.connect(db_path)
+        c = self.db.cursor()
+        if not db_exists:
+            c.execute('CREATE TABLE users (username, password_hash, has_healed, number_of_games_played, punch_upgrade, kick_upgrade, total_kills, rank, new_game, current_kills, wave, xp, health)')
+        self.db.commit()
 
     def broadcast_data(self, sock, message):
         for socket in self.connection_list:
@@ -33,6 +43,7 @@ class Server:
 
     def disconnect(self, socket):
         del self.games[socket.fileno()]
+        del self.statuses[socket.fileno()]
         socket.close()
         self.connection_list.remove(socket)
 
@@ -48,13 +59,19 @@ class Server:
 
                     game = Game(sockfd, self)
                     self.games[sockfd.fileno()] = game
-                    game.start()
+                    self.statuses[sockfd.fileno()] = game.signin()
 
                 else:
                     try:
                         data = sock.recv(self.recv_buffer)
                         if data:
-                            self.games[sock.fileno()].parse_input(data.decode())
+                            if data in [b'\xff\xfb\x01', b'\xff\xfc\x01', b'\xff\xfd\x01', b'\xff\xfe\x01']: continue
+                            fileno = sock.fileno()
+                            old_status = self.statuses[fileno]
+                            if old_status:
+                                self.statuses[fileno] = old_status(data.decode())
+                            else:
+                                self.statuses[fileno] = self.games[fileno].parse_input(data.decode())
                     
                     except UnicodeDecodeError:
                         self.games[sock.fileno()].quit()
@@ -66,9 +83,19 @@ class Server:
                     #    print(msg)
                     #    self.connection_list.remove(sock)
 
-server = Server()
+    def stop(self):
+        for client in self.connection_list:
+            self.disconnect(client)
 
-server.start()
+        self.db.close()
+
+server = Server()
+server.init_db()
+
+try:
+    server.start()
+except KeyboardInterrupt:
+    server.stop()
 
 print('(This is a debug statement)')
 

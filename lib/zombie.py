@@ -27,6 +27,7 @@ class Zombie:
         if self.health <= 0:
             self.game.display(color.RED + "KO! You killed the %s!" % self.kind.lower() + color.END)
             self.game.player.give_xp(self.xp)
+            self.game.player.add_kill()
             self.alive = False
 
     def attack(self, player):

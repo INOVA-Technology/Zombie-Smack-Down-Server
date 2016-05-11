@@ -3,7 +3,5 @@
 - Add a kick count/score
 - Add cool randomized messages for attacks, kills, and such
 - Add/finish info and help commands
-- Add acounts
-	- Save the game
-
+- Add a minimum password length
 

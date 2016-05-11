@@ -1,3 +1,5 @@
 .DS_Store
 lib/.DS_Store
 lib/__pycache__
+zsd_data.db
+

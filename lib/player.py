@@ -9,12 +9,26 @@ random.seed()
 
 class Player:
 
-    def __init__(self, game):
+    def __init__(self, game, username, has_healed, number_of_games_played, punch_upgrade, kick_upgrade, total_kills, rank, new_game, current_kills, wave, xp, health):
         self.game = game
-        self.health = 25
-        self.xp = 5
-        self.rank = 1
-        self.has_healed = False
+        self.username = username
+        self.has_healed = has_healed
+        self.number_of_games_played = number_of_games_played
+        self.punch_upgrade = punch_upgrade
+        self.kick_upgrade = kick_upgrade
+        self.total_kills = total_kills
+        self.rank = rank
+        self.new_game = new_game
+        if not new_game:
+            self.current_kills = current_kills
+            self.wave = wave
+            self.xp = xp
+            self.health = health
+        else:
+            self.current_kills = 0
+            self.wave = 1
+            self.xp = 5
+            self.health = 25
 
     def kick(self, zombie):
         damage = random.randint(4, 6)
@@ -39,12 +53,19 @@ class Player:
         self.game.display("Health: %d" % self.health)
         self.game.display("XP: %d" % self.xp)
         self.game.display("Rank: %d" % self.rank)
-        self.game.display("Wave: %d" % self.game.wave)
+        self.game.display("Wave: %d" % self.wave)
+        self.game.display("Kills: %d" % self.current_kills) 
         self.game.display(color.END, newLine = False)
 
     def give_xp(self, amount):
         self.xp += amount
         self.game.display(color.CYAN + "+%d xp!" % amount + color.END)
+
+    def add_kill(self):
+        self.current_kills += 1
+        self.total_kills += 1
+        if self.current_kills % 3 == 0:
+            self.wave += 1
 
     def heal(self, amount):
         amount = int(amount)
