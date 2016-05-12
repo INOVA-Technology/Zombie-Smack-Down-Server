@@ -21,14 +21,14 @@ class Zombie:
     def take_damage(self, damage):
         self.health -= damage
         self.game.display(color.RED + "You hit the zombie! -%d" % damage + color.END)
-        self.check_dead()
+        return self.check_dead()
 
     def check_dead(self):
         if self.health <= 0:
             self.game.display(color.RED + "KO! You killed the %s!" % self.kind.lower() + color.END)
             self.game.player.give_xp(self.xp)
-            self.game.player.add_kill()
             self.alive = False
+            return self.game.player.add_kill()
 
     def attack(self, player):
         damage = random.randint(*self.power)

@@ -30,7 +30,7 @@ class Server:
         self.db = sqlite3.connect(db_path)
         c = self.db.cursor()
         if not db_exists:
-            c.execute('CREATE TABLE users (username, password_hash, has_healed, number_of_games_played, punch_upgrade, kick_upgrade, total_kills, rank, new_game, current_kills, wave, xp, health)')
+            c.execute('CREATE TABLE users (username, password_hash, has_healed, number_of_games_played, punch_upgrade, kick_upgrade, total_kills, rank, kills_since_last_rank_up, new_game, current_kills, wave, xp, health)')
         self.db.commit()
 
     def broadcast_data(self, sock, message):

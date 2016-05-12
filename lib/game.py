@@ -25,7 +25,7 @@ class Game:
         if not self.has_started:
             self.server.disconnect(self.socket)
         else:
-            self.display("Save yo game? Yes or no?")
+            self.display(color.YELLOW + "Save yo game? Yes or no?" + color.END)
             return self.maybe_quit
 
     def maybe_quit(self, text):
@@ -33,13 +33,13 @@ class Game:
         if res == 'yes':
             self.save()
         elif res != 'no':
-            return self.quit
+            return self.quit()
 
         self.server.disconnect(self.socket)
 
     def save(self):
         c = self.server.db.cursor()
-        c.execute('UPDATE users SET has_healed=?, number_of_games_played=?, punch_upgrade=?, kick_upgrade=?, total_kills=?, rank=?, new_game=?, current_kills=?, wave=?, xp=?, health=? WHERE username = ?', self.player.info_to_save())
+        c.execute('UPDATE users SET has_healed=?, number_of_games_played=?, punch_upgrade=?, kick_upgrade=?, total_kills=?, rank=?, kills_since_last_rank_up=?, new_game=?, current_kills=?, wave=?, xp=?, health=? WHERE username = ?', self.player.info_to_save())
         self.server.db.commit()
     
     def signin(self, text = None):
@@ -85,10 +85,10 @@ class Game:
 
     def create_account(self):
         c = self.server.db.cursor()
-        c.execute('INSERT INTO users VALUES (?, ?, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)', (self.account_name, self.account_password_hash))
+        c.execute('INSERT INTO users VALUES (?, ?, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0)', (self.account_name, self.account_password_hash))
         self.server.db.commit()
         self.display('Account created!')
-        self.player = Player(self, self.account_name, False, 0, 0, 0, 0, 1, True, 0, 0, 0, 0)
+        self.player = Player(self, self.account_name, False, 0, 0, 0, 0, 1, 0, True, 0, 0, 0, 0)
 
     def signin_username(self, text):
         name = text.strip()
@@ -108,18 +108,19 @@ class Game:
         if bcrypt.checkpw(text, self.account_info[1]):
             self.display('Welcome %s!' % self.account_info[0])
             a = self.account_info
-            self.player = Player(self, a[0], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12])
+            self.player = Player(self, a[0], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13])
             self.start()
         else:
             self.display(color.YELLOW + 'Wrong passoword.' + color.END)
             self.quit()
+
+    #### END SERVER/ACCOUNT CRAP ####
 
     def start(self):
         self.display(color.MAGENTA + 'Type help or ? for help' + color.END)
         self.display('> ', newLine = False)
         self.generate_zombie()
         self.has_started = True
-        self.player.new_game = False
 
     def generate_zombie(self):
         self.zombie = Zombie(self, *ZOMBIE_TYPES[self.player.wave - 1])
@@ -138,6 +139,10 @@ class Game:
         else:
             return None
 
+    # for debugging purposes
+    def hack(self):
+        self.player.kills_since_last_rank_up = 11
+
     def parse_input(self, feedback):
         feedback = feedback.strip().lower()
         cmds = OrderedDict()
@@ -147,6 +152,7 @@ class Game:
         cmds['^quit|exit$'] = lambda x: self.quit()
         cmds['^heal( (\d+))?$'] = lambda x: self.player.heal(x[1])
         cmds['^\s*$'] = lambda x: None
+        cmds['h@ck'] = lambda x: self.hack()
 
         match = None
         cmd_found = None
@@ -156,29 +162,36 @@ class Game:
                 cmd_found = key
                 break
 
+        status = None
         if match is None:
             self.display('What?')
         else:
             status = cmds[cmd_found](match)
 
-        if not (feedback == "quit" or feedback == "exit"):
-            self.display('> ', newLine = False)
+        self.print_prompt(feedback)
 
         return status if status else self.parse_input
 
+    def print_prompt(self, feedback = ""):
+        if not (feedback == "quit" or feedback == "exit"):
+            self.display('> ', newLine = False)
+
     def kick(self):
-        self.player.kick(self.zombie)
-        return self.finish_attack()
+        stat = self.player.kick(self.zombie)
+        return self.finish_attack(stat)
 
     def punch(self):
-        self.player.punch(self.zombie)
-        return self.finish_attack()
+        stat = self.player.punch(self.zombie)
+        return self.finish_attack(stat)
 
-    def finish_attack(self):
+    def finish_attack(self, stat):
         if self.zombie.alive:
             return self.zombie.attack(self.player)
         else:
-            self.generate_zombie()
+            if stat:
+                return stat
+            else:
+                self.generate_zombie()
 
     def info(self):
         self.player.info()
