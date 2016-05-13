@@ -40,10 +40,13 @@ class Player:
 
     def kick(self, zombie):
         damage = random.randint(4, 6) + self.kick_upgrade
-        return zombie.take_damage(damage)
+        return self.attack(zombie, damage)
 
     def punch(self, zombie):
         damage = random.randint(3, 7) + self.punch_upgrade
+        return self.attack(zombie, damage)
+
+    def attack(self, zombie, damage):
         return zombie.take_damage(damage)
 
     def take_damage(self, damage):
@@ -70,6 +73,10 @@ class Player:
     def give_xp(self, amount, printMessage = True):
         self.xp += amount
         if printMessage: self.game.display(color.CYAN + "+%d xp!" % amount + color.END)
+
+    def take_xp(self, amount):
+        self.xp -= amount
+        self.game.display(color.CYAN + "-%d xp" % amount + color.END)
 
     def add_kill(self):
         self.current_kills += 1

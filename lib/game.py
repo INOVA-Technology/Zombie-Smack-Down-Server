@@ -8,6 +8,7 @@ import color
 from zombie import Zombie
 from zombie_list import ZOMBIE_TYPES
 from player import Player
+from combos import Combo, COMBOS
 
 class Game:
 
@@ -20,6 +21,7 @@ class Game:
         self.account_password_hash = ''
         self.account_info = ()
         self.has_started = False
+        self.combo_found = False
 
     def quit(self):
         if not self.has_started:
@@ -152,7 +154,8 @@ class Game:
         cmds['^quit|exit$'] = lambda x: self.quit()
         cmds['^heal( (\d+))?$'] = lambda x: self.player.heal(x[1])
         cmds['^\s*$'] = lambda x: None
-        cmds['h@ck'] = lambda x: self.hack()
+
+        #cmds['h@ck'] = lambda x: self.hack()
 
         match = None
         cmd_found = None
@@ -164,13 +167,37 @@ class Game:
 
         status = None
         if match is None:
-            self.display('What?')
+            status = self.try_combo(feedback)
+            if not self.combo_found:
+                self.display('What?')
+
+            self.combo_found = False
         else:
             status = cmds[cmd_found](match)
 
         self.print_prompt(feedback)
 
         return status if status else self.parse_input
+
+    def try_combo(self, combo_name):
+        c = None
+        for combo in COMBOS:
+            if combo[0] == combo_name:
+                c = combo
+                self.combo_found = True
+                break
+
+        if c:
+            combo = Combo(self, *c)
+            # check for enough xp, and use it
+            if self.player.xp >= combo.price:
+                self.player.take_xp(combo.price)
+                combo.do_extra()
+                stat = self.player.attack(self.zombie, combo.damage)
+                return self.finish_attack(stat)
+            else:
+                self.display("You don't have enough xp.")
+            
 
     def print_prompt(self, feedback = ""):
         if not (feedback == "quit" or feedback == "exit"):

@@ -1,4 +1,4 @@
-- Add combos
+- Add a combolist command that lists n - 1 combos where n is the players current rank
 - Add a kill count/score
 	- Global and local
 - Add highscores
