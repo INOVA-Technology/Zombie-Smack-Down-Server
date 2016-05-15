@@ -38,16 +38,24 @@ class Player:
         self.new_game = False
         self.max_upgrade = 7
 
-    def kick(self, zombie):
-        damage = random.randint(4, 6) + self.kick_upgrade
-        return self.attack(zombie, damage)
+    def attack(self, zombie, attack):
+        stat = None
+        if not attack.isCombo:
+            stat = self.game.zombie.take_damage(attack.get_damage())
+        elif self.xp >= attack.price:
+            self.take_xp(attack.price)
+            attack.do_extra()
+            stat = self.game.zombie.take_damage(attack.get_damage())
+        else:
+            self.game.display('You don\'t have enough xp :(')
+            return
 
-    def punch(self, zombie):
-        damage = random.randint(3, 7) + self.punch_upgrade
-        return self.attack(zombie, damage)
-
-    def attack(self, zombie, damage):
-        return zombie.take_damage(damage)
+        if zombie.alive:
+            return self.game.zombie.attack(self)
+        elif stat:
+            return stat
+        else:
+            self.game.generate_zombie()
 
     def take_damage(self, damage):
         self.health -= damage

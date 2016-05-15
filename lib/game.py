@@ -9,7 +9,7 @@ from zombie import Zombie
 from zombie_list import ZOMBIE_TYPES
 from player import Player
 from combos import Combo, COMBOS
-from commands import Command
+from commands import Command, Attack
 
 class Game:
 
@@ -24,6 +24,7 @@ class Game:
         self.has_started = False
         self.combo_found = False
         self.create_commands()
+        Attack.create_attacks(self)
 
     def quit(self):
         if not self.has_started:
@@ -144,17 +145,8 @@ class Game:
         else:
             return None
 
-    # for debugging purposes
-    def hack(self):
-        self.player.kills_since_last_rank_up = 11
-
     def parse_input(self, feedback):
         feedback = feedback.strip().lower()
-        cmds = OrderedDict()
-        cmds['^heal( (\d+))?$'] = lambda x: self.player.heal(x[1])
-        cmds['^\s*$'] = lambda x: None
-
-        #cmds['h@ck'] = lambda x: self.hack()
 
         match = None
         cmd_found = None
@@ -166,11 +158,11 @@ class Game:
 
         status = None
         if match is None:
-            status = self.try_combo(feedback)
-            if not self.combo_found:
-                self.display('What?')
-
-            self.combo_found = False
+            attack = Attack.ATTACKS.get(feedback)
+            if attack:
+                status = self.player.attack(self.zombie, attack)
+            else:
+                self.display("What?")
         else:
             status = cmd_found(match)
 
@@ -180,63 +172,22 @@ class Game:
 
     def create_commands(self):
         self.commands = []
+
+        tmp = [
+            ['^info$', 'info', 'Gives info', lambda x: self.info() ],
+            ['^(help|\?)( ([\w\s]+))?$', 'help', 'Gives help', lambda x: self.help(x[2]) ],
+            ['^quit|exit$', 'quit', 'If you want to leave.', lambda x: self.quit() ],
+            ['^heal( (\d+))?$', 'heal', 'It heals you.', lambda x: self.player.heal(x[1]) ],
+            ['^save$', 'save', 'It saves the game', lambda x: self.save() ],
+        ]
+
+        for tmpJr in tmp:
+            self.commands.append(Command(*tmpJr))
+
         
-        self.commands.append(Command('^kick$', 'kick', 'It\'s what it sounds like.', 'Noob', 0.4))
-        self.commands.append(Command('^punch$', 'punch', 'When one takes his fingers and folds them into the palm, projecting it at a zombie.', 'Noob', 0.2))    
-        self.commands.append(Command('^info$', 'info', 'Gives info'))            
-        self.commands.append(Command('^(help|\?)( ([\w\s]+))?$', 'help', 'Gives help'))            
-        self.commands.append(Command('^quit|exit$', 'quit', 'If you want to leave.'))            
-        self.commands.append(Command('^heal( (\d+))?$', 'heal', 'It heals you.'))    
-        self.commands.append(Command('^save$', 'heal', 'It heals you.'))    
-        
-        self.commands[0].func = lambda x: self.kick()    
-        self.commands[1].func = lambda x: self.punch()
-        self.commands[2].func = lambda x: self.info()
-        self.commands[3].func = lambda x: self.help(x[2])   # LOL
-        self.commands[4].func = lambda x: self.quit()
-        self.commands[5].func = lambda x: self.player.heal(x[1])
-        self.commands[6].func = lambda x: self.save()
-
-    def try_combo(self, combo_name):
-        c = None
-        for combo in COMBOS:
-            if combo[0] == combo_name:
-                c = combo
-                self.combo_found = True
-                break
-
-        if c:
-            combo = Combo(self, *c)
-            # check for enough xp, and use it
-            if self.player.xp >= combo.price:
-                self.player.take_xp(combo.price)
-                combo.do_extra()
-                stat = self.player.attack(self.zombie, combo.damage)
-                return self.finish_attack(stat)
-            else:
-                self.display("You don't have enough xp.")
-            
-
     def print_prompt(self, feedback = ""):
         if not (feedback == "quit" or feedback == "exit"):
             self.display('> ', newLine = False)
-
-    def kick(self):
-        stat = self.player.kick(self.zombie)
-        return self.finish_attack(stat)
-
-    def punch(self):
-        stat = self.player.punch(self.zombie)
-        return self.finish_attack(stat)
-
-    def finish_attack(self, stat):
-        if self.zombie.alive:
-            return self.zombie.attack(self.player)
-        else:
-            if stat:
-                return stat
-            else:
-                self.generate_zombie()
 
     def info(self):
         self.player.info()
@@ -247,13 +198,15 @@ class Game:
         if not cmd:
             names = ", ".join([str(command.name) for command in self.commands])
             self.display('Here are some helpful commands: ' + names)
+            # also explain/mention kick and punch
 
         else:
+            # handle the case of cmd being an attack
             cmd = cmd.lower().strip()
             for command in self.commands:
                 if cmd == command.name:
                     the_command = command
 
             self.display(color.MAGENTA + the_command.name)
-            self.display(color.MAGENTA + the_command.desc + color.END)
+            self.display(the_command.desc + color.END)
 

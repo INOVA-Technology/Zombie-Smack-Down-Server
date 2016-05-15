@@ -8,3 +8,8 @@
 - Don't ask about saving after dying, make it automatic
 - Add a minimum password length
 
+Fix:
+- help doesn't work for attacks
+- kick and punch upgrades are no longer used (make a upgrades dictionary)
+- put the Attack class in another file and get rid of the combo class
+
