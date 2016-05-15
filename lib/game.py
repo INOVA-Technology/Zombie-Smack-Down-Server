@@ -183,14 +183,14 @@ class Game:
         self.commands.append(Command('^kick$', 'kick', 'It\'s what it sounds like.', 'Noob', 0.4))
         self.commands.append(Command('^punch$', 'punch', 'When one takes his fingers and folds them into the palm, projecting it at a zombie.', 'Noob', 0.2))    
         self.commands.append(Command('^info$', 'info', 'Gives info'))            
-        self.commands.append(Command('^help|\?$', 'help', 'Gives help'))            
+        self.commands.append(Command('^(help|\?)( ([\w\s]+))?$', 'help', 'Gives help'))            
         self.commands.append(Command('^quit|exit$', 'quit', 'If you want to leave.'))            
         self.commands.append(Command('^heal( (\d+))?$', 'heal', 'It heals you.'))    
         
         self.commands[0].func = lambda x: self.kick()    
         self.commands[1].func = lambda x: self.punch()
         self.commands[2].func = lambda x: self.info()
-        self.commands[3].func = lambda x: self.help()
+        self.commands[3].func = lambda x: self.help(x[2])   # LOL
         self.commands[4].func = lambda x: self.quit()
         self.commands[5].func = lambda x: self.player.heal(x[1])
 
@@ -246,4 +246,11 @@ class Game:
             self.display('Here are some helpful commands: ' + names)
 
         else:
-            pass
+            cmd = cmd.lower().strip()
+            for command in self.commands:
+                if cmd == command.name:
+                    the_command = command
+
+            self.display(color.MAGENTA + the_command.name)
+            self.display(color.MAGENTA + the_command.desc + color.END)
+
