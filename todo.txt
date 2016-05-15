@@ -6,6 +6,5 @@
 - Add/finish info and help commands
 - Make the 'play as guest' option actually work
 - Don't ask about saving after dying, make it automatic
-- Add a way to save without quiting
 - Add a minimum password length
 

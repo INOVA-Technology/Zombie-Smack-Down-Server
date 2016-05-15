@@ -45,6 +45,7 @@ class Game:
         c = self.server.db.cursor()
         c.execute('UPDATE users SET has_healed=?, number_of_games_played=?, punch_upgrade=?, kick_upgrade=?, total_kills=?, rank=?, kills_since_last_rank_up=?, new_game=?, current_kills=?, wave=?, xp=?, health=? WHERE username = ?', self.player.info_to_save())
         self.server.db.commit()
+        self.display(color.YELLOW + "Game saved!" + color.END)
     
     def signin(self, text = None):
         self.display(color.MAGENTA + 'Welcome to Zombie Smack Down!' + color.END)
@@ -186,6 +187,7 @@ class Game:
         self.commands.append(Command('^(help|\?)( ([\w\s]+))?$', 'help', 'Gives help'))            
         self.commands.append(Command('^quit|exit$', 'quit', 'If you want to leave.'))            
         self.commands.append(Command('^heal( (\d+))?$', 'heal', 'It heals you.'))    
+        self.commands.append(Command('^save$', 'heal', 'It heals you.'))    
         
         self.commands[0].func = lambda x: self.kick()    
         self.commands[1].func = lambda x: self.punch()
@@ -193,6 +195,7 @@ class Game:
         self.commands[3].func = lambda x: self.help(x[2])   # LOL
         self.commands[4].func = lambda x: self.quit()
         self.commands[5].func = lambda x: self.player.heal(x[1])
+        self.commands[6].func = lambda x: self.save()
 
     def try_combo(self, combo_name):
         c = None
