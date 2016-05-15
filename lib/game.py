@@ -9,6 +9,7 @@ from zombie import Zombie
 from zombie_list import ZOMBIE_TYPES
 from player import Player
 from combos import Combo, COMBOS
+from commands import Command
 
 class Game:
 
@@ -22,6 +23,7 @@ class Game:
         self.account_info = ()
         self.has_started = False
         self.combo_found = False
+        self.create_commands()
 
     def quit(self):
         if not self.has_started:
@@ -81,7 +83,7 @@ class Game:
 
     def create_account_password(self, text):
         self.socket.send(b'\xff\xfc\x01')
-        self.account_password_hash = bcrypt.hashpw(text, bcrypt.gensalt(12))
+        self.account_password_hash = bcrypt.hashpw(text.encode(), bcrypt.gensalt(12))
         self.create_account()
         self.start()
 
@@ -107,7 +109,7 @@ class Game:
 
     def signin_password(self, text):
         self.socket.send(b'\xff\xfc\x01\n')
-        if bcrypt.checkpw(text, self.account_info[1]):
+        if bcrypt.hashpw(text.encode(), self.account_info[1]):
             self.display('Welcome %s!' % self.account_info[0])
             a = self.account_info
             self.player = Player(self, a[0], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13])
@@ -148,10 +150,6 @@ class Game:
     def parse_input(self, feedback):
         feedback = feedback.strip().lower()
         cmds = OrderedDict()
-        cmds['^kick$'] = lambda x: self.kick()
-        cmds['^punch$'] = lambda x: self.punch()
-        cmds['^info$'] = lambda x: self.info()
-        cmds['^quit|exit$'] = lambda x: self.quit()
         cmds['^heal( (\d+))?$'] = lambda x: self.player.heal(x[1])
         cmds['^\s*$'] = lambda x: None
 
@@ -159,10 +157,10 @@ class Game:
 
         match = None
         cmd_found = None
-        for key in cmds.keys():
-            match = self.check_regex(feedback, key)
+        for command in self.commands:
+            match = self.check_regex(feedback, command.regex)
             if match is not None:
-                cmd_found = key
+                cmd_found = command.func
                 break
 
         status = None
@@ -173,11 +171,28 @@ class Game:
 
             self.combo_found = False
         else:
-            status = cmds[cmd_found](match)
+            status = cmd_found(match)
 
         self.print_prompt(feedback)
 
         return status if status else self.parse_input
+
+    def create_commands(self):
+        self.commands = []
+        
+        self.commands.append(Command('^kick$', 'kick', 'It\'s what it sounds like.', 'Noob', 0.4))
+        self.commands.append(Command('^punch$', 'punch', 'When one takes his fingers and folds them into the palm, projecting it at a zombie.', 'Noob', 0.2))    
+        self.commands.append(Command('^info$', 'info', 'Gives info'))            
+        self.commands.append(Command('^help|\?$', 'help', 'Gives help'))            
+        self.commands.append(Command('^quit|exit$', 'quit', 'If you want to leave.'))            
+        self.commands.append(Command('^heal( (\d+))?$', 'heal', 'It heals you.'))    
+        
+        self.commands[0].func = lambda x: self.kick()    
+        self.commands[1].func = lambda x: self.punch()
+        self.commands[2].func = lambda x: self.info()
+        self.commands[3].func = lambda x: self.help()
+        self.commands[4].func = lambda x: self.quit()
+        self.commands[5].func = lambda x: self.player.heal(x[1])
 
     def try_combo(self, combo_name):
         c = None
@@ -225,6 +240,10 @@ class Game:
         self.display('')
         self.zombie.info()
 
-        
+    def help(self, cmd = None):
+        if not cmd:
+            names = ", ".join([str(command.name) for command in self.commands])
+            self.display('Here are some helpful commands: ' + names)
 
-
+        else:
+            pass
