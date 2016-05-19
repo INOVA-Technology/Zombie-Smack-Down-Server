@@ -1,4 +1,9 @@
-import random
+import random, sys, os
+
+directory = os.path.realpath('.')
+absolute_directory = os.path.join(directory, 'lib')
+sys.path.append(absolute_directory)
+import color
 
 class Command:
 
@@ -31,6 +36,11 @@ class Attack:
         if self.func != None:
             self.func(self)
 
+    def describe(self):
+        self.game.display(color.MAGENTA, newLine = False)
+        self.game.display('%s - Price: %s, Rank: %s' % (self.name, self.price, self.type) )
+        self.game.display(color.END, newLine = False)
+
     @staticmethod
     def create_attacks(game):
         combos_list = [
@@ -43,8 +53,14 @@ class Attack:
             ["kick kick kick kick kick kick kick kick kick kick", 9, [11, 16], "advanced"],
         ]
 
+        Attack.ATTACK_KEYS = []
+
+        i = 0
         for c in combos_list:
-            Attack.ATTACKS[c[0]] = Attack(game, True, *c)
+            a = Attack(game, True, *c)
+            Attack.ATTACK_KEYS.append(c[0])
+            Attack.ATTACKS[c[0]] = a 
+
 
         Attack.ATTACKS['kick'] = Attack(game, False, 'kick', 0, [3, 7], "noob")
         Attack.ATTACKS['punch'] = Attack(game, False, 'punch', 0, [4, 6], "noob")

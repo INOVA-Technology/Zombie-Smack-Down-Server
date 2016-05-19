@@ -179,6 +179,7 @@ class Game:
             ['^quit|exit$', 'quit', 'If you want to leave.', lambda x: self.quit() ],
             ['^heal( (\d+))?$', 'heal', 'It heals you.', lambda x: self.player.heal(x[1]) ],
             ['^save$', 'save', 'It saves the game', lambda x: self.save() ],
+            ['^combolist$', 'combolist', 'It lists the combos you have unlocked.', lambda x: self.combolist() ]
         ]
 
         for tmpJr in tmp:
@@ -188,6 +189,17 @@ class Game:
     def print_prompt(self, feedback = ""):
         if not (feedback == "quit" or feedback == "exit"):
             self.display('> ', newLine = False)
+
+    def combolist(self):
+        combo_count = 1
+        self.display(color.MAGENTA + 'Unlocked combos:' + color.END)
+        for a in Attack.ATTACK_KEYS:
+            attack = Attack.ATTACKS[a]
+            if attack.isCombo:
+                if combo_count <= self.player.rank:
+                    attack.describe()
+                    combo_count += 1
+
 
     def info(self):
         self.player.info()
