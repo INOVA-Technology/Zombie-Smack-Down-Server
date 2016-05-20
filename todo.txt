@@ -1,3 +1,4 @@
+- Make the server backup the database periodicly if it's changed
 - Add a kill count/score
 	- Global and local
 - Add highscores

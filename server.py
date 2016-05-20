@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import socket, select, sys, os, sqlite3
+import socket, select, sys, os, sqlite3, signal
 
 directory = os.path.realpath('.')
 absolute_directory = os.path.join(directory, 'lib')
@@ -23,6 +23,8 @@ class Server:
         self.games = {}
         self.statuses = {}
         print('Server started on port ' + str(self.port))
+        self.should_stop = False
+        signal.signal(signal.SIGTERM, self.stop)
 
     def init_db(self):
         db_path = "zsd_data.db"
@@ -42,13 +44,14 @@ class Server:
                     disconnect(socket)
 
     def disconnect(self, socket):
-        del self.games[socket.fileno()]
-        del self.statuses[socket.fileno()]
+        if socket != self.server_socket:
+            del self.games[socket.fileno()]
+            del self.statuses[socket.fileno()]
         socket.close()
         self.connection_list.remove(socket)
 
     def start(self):
-        while True:
+        while not self.should_stop:
             read_sockets, write_sockets, error_sockets = select.select(self.connection_list, [], [])
 
             for sock in read_sockets:
@@ -75,6 +78,8 @@ class Server:
                     
                     except UnicodeDecodeError:
                         self.games[sock.fileno()].quit()
+
+        self.stop()
                     
 
                     # except:
@@ -83,7 +88,9 @@ class Server:
                     #    print(msg)
                     #    self.connection_list.remove(sock)
 
-    def stop(self):
+    def stop(self, signum = None, frame = None):
+        print("server shutting down")
+        self.should_stop = True
         for client in self.connection_list:
             self.disconnect(client)
 
@@ -97,7 +104,6 @@ try:
 except KeyboardInterrupt:
     server.stop()
 
-print('(This is a debug statement)')
 
 
 
