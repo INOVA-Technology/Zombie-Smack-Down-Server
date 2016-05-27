@@ -25,15 +25,8 @@ class Server:
         print('Server started on port ' + str(self.port))
         self.should_stop = False
         signal.signal(signal.SIGTERM, self.stop)
-
-    def init_db(self):
-        db_path = "zsd_data.db"
-        db_exists = os.path.isfile(db_path)
-        self.db = sqlite3.connect(db_path)
-        c = self.db.cursor()
-        if not db_exists:
-            c.execute('CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username, password_hash, has_healed, number_of_games_played, punch_upgrade, kick_upgrade, total_kills, rank, kills_since_last_rank_up, new_game, current_kills, wave, xp, health)')
-        self.db.commit()
+        self.db_path = "zsd_data.db"
+        self.db = sqlite3.connect(self.db_path)
 
     def broadcast_data(self, sock, message):
         for socket in self.connection_list:
@@ -97,7 +90,6 @@ class Server:
         self.db.close()
 
 server = Server()
-server.init_db()
 
 try:
     server.start()

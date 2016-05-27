@@ -45,6 +45,8 @@ class Game:
     def save(self):
         c = self.server.db.cursor()
         c.execute('UPDATE users SET has_healed=?, number_of_games_played=?, punch_upgrade=?, kick_upgrade=?, total_kills=?, rank=?, kills_since_last_rank_up=?, new_game=?, current_kills=?, wave=?, xp=?, health=? WHERE username = ?', self.player.info_to_save())
+        c.execute("SELECT float_value FROM stats WHERE record = 'total kills'")
+        c.execute("UPDATE stats SET float_value = float_value + ? WHERE record = 'total kills'", (self.player.current_kills,))
         self.server.db.commit()
         self.display(color.YELLOW + "Game saved!" + color.END)
     
@@ -92,6 +94,7 @@ class Game:
     def create_account(self):
         c = self.server.db.cursor()
         c.execute('INSERT INTO users VALUES (NULL, ?, ?, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0)', (self.account_name, self.account_password_hash))
+        c.execute("UPDATE stats SET float_value = float_value + 1 WHERE record = 'total users'")
         self.server.db.commit()
         self.display('Account created!')
         self.player = Player(self, self.account_name, False, 0, 0, 0, 0, 1, 0, True, 0, 0, 0, 0)
