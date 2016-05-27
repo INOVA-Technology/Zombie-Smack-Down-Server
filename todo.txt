@@ -1,4 +1,5 @@
 - Make the server backup the database periodicly if it's changed
+	- make a start_server command which migrates/inits the db, then starts the server
 - Add a kill count/score
 	- Global and local
 - Add highscores

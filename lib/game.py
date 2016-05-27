@@ -91,7 +91,7 @@ class Game:
 
     def create_account(self):
         c = self.server.db.cursor()
-        c.execute('INSERT INTO users VALUES (?, ?, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0)', (self.account_name, self.account_password_hash))
+        c.execute('INSERT INTO users VALUES (NULL, ?, ?, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0)', (self.account_name, self.account_password_hash))
         self.server.db.commit()
         self.display('Account created!')
         self.player = Player(self, self.account_name, False, 0, 0, 0, 0, 1, 0, True, 0, 0, 0, 0)
@@ -111,9 +111,9 @@ class Game:
 
     def signin_password(self, text):
         self.socket.send(b'\xff\xfc\x01\n')
-        if bcrypt.hashpw(text.encode(), self.account_info[1]):
-            self.display('Welcome %s!' % self.account_info[0])
-            a = self.account_info
+        if bcrypt.hashpw(text.encode(), self.account_info[2]) == self.account_info[2]:
+            a = self.account_info[1:]
+            self.display('Welcome %s!' % a[0])
             self.player = Player(self, a[0], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13])
             self.start()
         else:
