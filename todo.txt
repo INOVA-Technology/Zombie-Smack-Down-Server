@@ -1,5 +1,4 @@
 - Make the server backup the database periodicly if it's changed
-	- make a start_server command which migrates/inits the db, then starts the server
 - Add a kill count/score
 	- Global and local
 - Add highscores
@@ -8,6 +7,7 @@
 - Make the 'play as guest' option actually work
 - Don't ask about saving after dying, make it automatic
 - Add a minimum password length
+- Allow login/log in and logout/log out also in the signin menu
 
 Fix:
 - help doesn't work for attacks

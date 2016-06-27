@@ -52,6 +52,7 @@ class Game:
     
     def signin(self, text = None):
         self.display(color.MAGENTA + 'Welcome to Zombie Smack Down!' + color.END)
+        self.display(color.MAGENTA + 'Total kills worldwide: %d' % self.stats()['total kills'] + color.END)
         self.display("Enter 'signin' if you've been here before and have an account, or enter 'signup' to create an account.")
         self.display("An account is only necessary to save your progress. If you wish to play as a guest, simply enter 'guest'.") 
         self.display("If you hate fun therefore do not wish to play zombie smack down, enter 'quit'.")
@@ -124,6 +125,14 @@ class Game:
             self.quit()
 
     #### END SERVER/ACCOUNT CRAP ####
+
+    def stats(self):
+        c = self.server.db.cursor()
+        _stats = {}
+        for row in c.execute("SELECT * FROM stats WHERE record IN ('total kills', 'total users')"):
+            _stats[row[1]] = row[2]
+        return _stats
+        
 
     def start(self):
         self.display(color.MAGENTA + 'Type help or ? for help' + color.END)
