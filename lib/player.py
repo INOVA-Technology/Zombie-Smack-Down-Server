@@ -109,23 +109,23 @@ class Player:
     def heal(self, amount, cost_xp = True):
         if cost_xp:
             if amount and int(amount) > 0:
-                amount = int(amount)
-                if self.xp >= amount:
-                    self.health += amount
-                    self.xp -= amount
-                    self.game.display(color.CYAN + '+%d health!' % amount + color.END)
-                    self.game.display(color.RED + '-%d xp' % amount + color.END)
-                else:
+                if not self.xp >= int(amount):
                     self.game.display(color.YELLOW + 'You don\'t have enough xp!' + color.END)
+                    return
             else:
                 self.game.display(color.MAGENTA, newLine = False)
                 self.game.display('Usage: heal amount')
                 self.game.display('amount must be an integer greater then 0.')
                 self.game.display('For each hp you heal, you will lose one xp.')
                 self.game.display(color.END, newLine = False)
-        else:
-            self.health += amount
-            self.game.display(color.CYAN + '+%d health!' % amount + color.END)
+                return
+
+        amount = int(amount);
+        self.health += amount
+        self.game.display(color.CYAN + '+%d health!' % amount + color.END)
+        if cost_xp:
+            self.xp -= amount
+            self.game.display(color.RED + '-%d xp' % amount + color.END)
 
     def upgrade(self):
         if self.kick_upgrade >= self.max_upgrade and self.punch_upgrade >= self.max_upgrade:

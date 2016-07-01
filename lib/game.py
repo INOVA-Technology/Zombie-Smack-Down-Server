@@ -132,7 +132,6 @@ class Game:
         for row in c.execute("SELECT * FROM stats WHERE record IN ('total kills', 'total users')"):
             _stats[row[1]] = row[2]
         return _stats
-        
 
     def start(self):
         self.display(color.MAGENTA + 'Type help or ? for help' + color.END)
@@ -207,8 +206,7 @@ class Game:
         self.display(color.MAGENTA + 'Unlocked combos:' + color.END)
         for a in Attack.ATTACK_KEYS:
             attack = Attack.ATTACKS[a]
-            if attack.isCombo:
-                if combo_count <= self.player.rank:
+            if attack.isCombo and combo_count <= self.player.rank:
                     attack.describe()
                     combo_count += 1
 
